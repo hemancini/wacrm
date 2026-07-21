@@ -65,6 +65,15 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   /**
+   * Standalone output for Docker / Dokploy.
+   *
+   * Traces only the files each route needs into `.next/standalone`,
+   * producing a self-contained `server.js` we run directly — no need
+   * to ship the full `node_modules` in the runtime image.
+   */
+  output: "standalone",
+
+  /**
    * Cross-origin dev access (Next.js 16).
    *
    * Next 16 blocks requests to dev-only resources (`/_next/*` internals,

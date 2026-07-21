@@ -1,0 +1,43 @@
+# =============================================================================
+# wacrm — docker-compose for Dokploy (Compose deployment)
+#
+# Dokploy injects the variables you define in the app's "Environment" panel,
+# so this file only references them — no secrets live here.
+#
+# IMPORTANT: NEXT_PUBLIC_* are inlined at BUILD time (build args) AND read at
+# runtime (SSR), so they appear in both `build.args` and `environment`.
+# Server-only secrets are runtime-only.
+# =============================================================================
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Baked into the client bundle at build time.
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+        NEXT_PUBLIC_APP_LOCALE: ${NEXT_PUBLIC_APP_LOCALE:-en}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      # Public (needed again at runtime for SSR).
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+      NEXT_PUBLIC_APP_LOCALE: ${NEXT_PUBLIC_APP_LOCALE:-en}
+      # Server-only secrets.
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      META_APP_SECRET: ${META_APP_SECRET}
+    # Dokploy's Traefik proxy routes to this container port. Keep the
+    # published host port out of the file so Dokploy manages the domain;
+    # uncomment for a plain `docker compose up` on your own box.
+    # ports:
+    #   - "3000:3000"
+    expose:
+      - "3000"
